@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home page</title>
+    <link rel="stylesheet" href="./assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./assets/css/fa.min.css">
+    <link rel="stylesheet" href="./assets/css/app.css">
+</head>
+<body>
+    <div class="container-fluid mb-5">
+        <div class="row d-flex justify-content-center">
+            <div class="col-12">
+                <h1 class="text-center">User List</h1>
+            </div>
+            <div class="col-sm-10 col-md-8 col-lg-6 col-xl-4">
+                <div class="table-responsive-sm">
+                    <table id="users-table" class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th colspan="3" class="bg-custom"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="3" hidden></td></tr>
+
+                        </tbody>
+                        <tfoot>
+                            <th colspan="3" class="border-bottom-0">
+                                <div class="btn-toolbar justify-content-center mb-2" role="toolbar">
+                                    <div id="pagination" class="btn-group" role="group">
+                                    </div>
+                                </div>
+                            </th>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="footer" class="fixed-bottom text-center">
+        <button id="logout-btn" class="btn btn-link text-dark text-decoration-none fw-bolder">
+            <i class="fa fa-right-from-bracket"></i>
+            Log Out
+        </button>
+    </div>
+    <script src="./assets/js/jquery.min.js"></script>
+    <script src="./assets/js/sweetalert.min.js"></script>
+    <script>
+        const api_key = window.localStorage.getItem('api_key') || ''
+        let page = 1
+        getUsers(page)
+
+        $('#pagination').on('click', '.btn-pagination', function() {
+            page = $(this).data('page') || 1
+            getUsers(page)
+        })
+
+        $('#pagination').on('click', '.btn-first', function() {
+            page = 1
+            getUsers(page)
+        })
+
+        $('#pagination').on('click', '.btn-prev', function() {
+            if(page > 1)
+                getUsers(--page)
+        })
+
+        $('#pagination').on('click', '.btn-next', function() {
+            pages = $(this).data('pages') || 1
+
+            if(page < pages)
+                getUsers(++page)
+        })
+
+        $('#pagination').on('click', '.btn-last', function() {
+            page = $(this).data('pages') || 1
+            getUsers(page)
+        })
+
+        $('#logout-btn').on('click', function(el) {
+            $.ajax({
+                method: "DELETE",
+                url: 'http://localhost:8080/app/auth.php?api_key=' + api_key,
+                crossDomain: true,
+                xhrFields: {
+                    withCredentials: true
+                }
+            })
+            .done(function(resp) {
+                if(resp.code != undefined) {
+                    swal('', resp.message || 'Uknown error', 'error')
+                    return;
+                }
+
+                if(resp) {
+                    window.localStorage.setItem('api_key', '')
+                    window.location.replace('./login.html')
+                }
+
+
+            }).fail(function(xhr, status, message) {
+                swal('', message, 'error')
+            })
+        })
+
+        function getUsers(page = 1) {
+            $.ajax({
+                method: "GET",
+                url: 'http://localhost:8080/app/users.php?api_key=' + api_key + '&page=' + page,
+                crossDomain: true,
+                xhrFields: {
+                    withCredentials: true
+                }
+            })
+            .done(function(resp) {
+                if(resp.code != undefined) {
+                    swal('', resp.message || 'Uknown error', 'error')
+                    return;
+                }
+
+                let users   = resp.data || []
+                let total   = resp.total || 0
+                let perPage = resp.perPage || 5
+                let curPage = 0
+                let pages   = Math.ceil(total / perPage)
+
+                $('#users-table > tbody').html('')
+                $('#pagination').html('')
+
+                if(users.length > 0) {
+                    let tr = ''
+
+                    for(i = 0; i < users.length; i++) {
+                        tr += '<tr>'
+
+                        if(users[i].status)
+                            tr += '<td class="text-success"><i class="fa fa-circle-check"></i></td>'
+                        else
+                            tr += '<td class="text-muted"><i class="fa fa-circle-minus"></i></td>'
+
+                        tr += '<td><di>' + users[i].username + '</di>'
+                        tr +='<div class="text-muted">' + users[i].name + '</div></td>'
+                        tr += '<td><div>...</div>'
+                        tr +='<div>' + users[i].group + '</div></td>'
+                        tr += '</tr>'
+                    }
+
+                    $('#users-table > tbody').append(tr)
+                }
+
+                if(pages > 1) {
+                    let pg = ''
+
+                    if(page > 1) {
+                        pg += '<button class="btn btn-outline-light btn-first text-dark p-1"><i class="fa fa-angles-left"></i></button>'
+
+                        pg += '<button class="btn btn-outline-light btn-prev text-dark p-1">Prev</button>'
+                    }
+
+                    for(i = 1; i <= pages; i++) {
+                        pg += '<button class="btn btn-outline-light btn-pagination '
+                        pg += i == page ? 'selected-page' : ''
+                        pg +=' text-dark p-1" data-page=' + i + '>' + i + '</button>'
+                    }
+
+
+                    if(page < pages) {
+                        pg += '<button class="btn btn-outline-light btn-next text-dark p-1" data-pages=' + pages + '>Next</button>'
+
+                        pg += '<button class="btn btn-outline-light btn-last text-dark p-1" data-pages=' + pages + '><i class="fa fa-angles-right"></i></button>'
+                    } else {
+                        pg += '<button class="btn btn-outline-light text-dark p-1" disabled>Next</button>'
+
+                        pg += '<button class="btn btn-outline-light text-dark p-1" disabled><i class="fa fa-angles-right"></i></button>'
+                    }
+
+
+
+                    $('#pagination').append(pg)
+                }
+            }).fail(function(xhr, status, message) {
+                swal('', message, 'error')
+            })
+        }
+    </script>
+</body>
+</html>

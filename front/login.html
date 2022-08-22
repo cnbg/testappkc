@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login page</title>
+    <link rel="stylesheet" href="./assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./assets/css/fa.min.css">
+    <link rel="stylesheet" href="./assets/css/app.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <form id="login-form" class="row vh-100 d-flex align-items-center justify-content-center">
+            <div class="col-sm-8 col-md-6 col-lg-4 col-xl-3">
+                <img src="./assets/img/logo.svg" alt="Logo" class="mb-4">
+                <h6 class="mb-0 text-dark-grey">Welcome to the Learning Management System</h6>
+                <div class="mb-4 text-dark-grey subtitle">Please log in to continue</div>
+                <div class="form-group form-group-icon mb-2">
+                    <img src="./assets/img/user.svg" alt="">
+                    <input type="text"
+                    name="username"
+                    class="form-control rounded-pill"
+                    placeholder="Username">
+                </div>
+                <div class="form-group form-group-icon mb-2">
+                    <img src="./assets/img/password.svg" alt="">
+                    <input type="password"
+                    name="password"
+                    class="form-control rounded-pill"
+                    placeholder="Password">
+                </div>
+                <div class="form-check mb-5">
+                    <input name="remember" id="input-remember"
+                    class="form-check-input cursor-pointer"
+                    type="checkbox"
+                    value="1">
+                    <label class="form-check-label cursor-pointer" for="input-remember">
+                        Remember me
+                    </label>
+                </div>
+                <div class="d-grid mb-2">
+                    <button type="submit" class="btn btn-warning rounded-pill">
+                        <div class="d-flex justify-content-between">
+                            <div>Login</div>
+                            <div>
+                                <span class="border-circle-white">
+                                    <i class="fa fa-chevron-right"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script src="./assets/js/jquery.min.js"></script>
+    <script src="./assets/js/sweetalert.min.js"></script>
+    <script>
+        $(function() {
+            $('#login-form').submit(function(el) {
+                el.preventDefault()
+                let inputs = $(this).find('input, button')
+                inputs.prop('disabled', true)
+
+                let username = $(this).find('input[name=username')
+                let password = $(this).find('input[name=password')
+                let remember = $(this).find('input[name=remember')
+
+                username.val().length == 0 ? username.addClass('is-invalid') : username.removeClass('is-invalid')
+                password.val().length == 0 ? password.addClass('is-invalid') : password.removeClass('is-invalid')
+
+                if(username.val().length == 0 || password.val().length == 0) {
+                    swal('', 'Username and password are required', 'error')
+                    .then((value) => {
+                        inputs.prop('disabled', false)
+                    })
+                } else {
+                        $.ajax({
+                            method: "POST",
+                            url: 'http://localhost:8080/app/auth.php',
+                            data: {
+                                username: username.val(),
+                                password: password.val(),
+                                remember: remember.attr('checked'),
+                            },
+                            crossDomain: true,
+                            xhrFields: {
+                                withCredentials: true
+                            }
+                        })
+                        .done(function(resp) {
+                            if(resp.code != undefined) {
+                                swal('', resp.message || 'Uknown error', 'error')
+                                return;
+                            }
+
+                            if(resp) {
+                                window.localStorage.setItem('api_key', resp.api_key)
+                                window.location.replace('./index.html')
+                            }
+                        }).fail(function(xhr, status, message) {
+                            swal('', message, 'error')
+                        }).always(function() {
+                            // username.val('')
+                            password.val('')
+                            remember.prop('checked', false)
+                            inputs.prop('disabled', false)
+                        })
+                }
+            })
+        })
+    </script>
+</body>
+</html>

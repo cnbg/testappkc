@@ -1,0 +1,59 @@
+#footer {
+    background-color: #ececec;
+}
+
+.bg-custom {
+    background-color: #E98C3B !important;
+}
+
+.selected-page {
+    font-weight: 400;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-decoration-color: #E98C3B;
+}
+
+.btn-warning,
+.btn-warning:hover,
+.btn-warning:active,
+.btn-warning:focus,
+.btn-warning:disabled {
+    color: white;
+    background-color: #E98C3B;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.text-dark-grey {
+    color: #333333;
+}
+
+.subtitle {
+    font-size: 14px;
+}
+
+.border-circle-white {
+    padding: 1px 7px;
+    border: 1px solid white;
+    border-radius: 50%;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.form-group-icon {
+    position: relative;
+}
+
+.form-group-icon img {
+    position: absolute;
+    width: 24px;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.form-group-icon input {
+    padding-left: 34px;
+}
